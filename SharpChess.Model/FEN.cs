@@ -52,6 +52,33 @@ namespace SharpChess.Model
             }
         }
 
+        public static string Game960StartPosition
+        {
+            get
+            {
+                string lowerRow = "rnbqkbnr";
+                string lower960Row = "";
+                string cap960Row = "";
+
+                while (lowerRow.Length > 0 || lowerRow != "")
+                {
+                    Random r = new Random();
+                    int i = r.Next(0, lowerRow.Length);
+                    char c = lowerRow[i];
+                    lower960Row = lower960Row + c;
+                    lowerRow = lowerRow.Remove(i, 1);
+                }
+
+                cap960Row = lower960Row;
+                for (int i = 0; i < cap960Row.Length; i++)
+                {
+                    char.ToUpper(cap960Row[i]);
+                }
+
+                return lower960Row + "/pppppppp/8/8/8/8/PPPPPPPP/" + cap960Row + " w KQkq - 0 1";
+            }
+        }
+
         #endregion
 
         #region Public Methods
@@ -817,8 +844,8 @@ namespace SharpChess.Model
             {
                 return " " + Game.MoveHistory.Last.From.FileName
                        + ((Game.MoveHistory.Last.Piece.Player.Colour == Player.PlayerColourNames.White) ? "3 " : "6 ");
-                    
-                    // The case between From and To
+
+                // The case between From and To
             }
 
             return " - "; // There is not en passant target square

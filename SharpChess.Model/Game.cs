@@ -505,6 +505,7 @@ namespace SharpChess.Model
             SuspendPondering();
 
             NewInternal();
+            New960Internal();
             saveGameFileName = fileName;
             bool blnSuccess = LoadGame(fileName);
             if (blnSuccess)
@@ -559,6 +560,28 @@ namespace SharpChess.Model
             SuspendPondering();
 
             NewInternal(fenString);
+            SaveBackup();
+            SendBoardPositionChangeEvent();
+            ResumePondering();
+        }
+
+        /// <summary>
+        ///   Start a new game.
+        /// </summary>
+        public static void New960()
+        {
+            New960(string.Empty);
+        }
+
+        /// <summary>
+        ///   Start a new 960 game using a FEN string.
+        /// </summary>
+        /// <param name="fenString"> The FEN string. </param>
+        public static void New960(string fenString)
+        {
+            SuspendPondering();
+
+            New960Internal(fenString);
             SaveBackup();
             SendBoardPositionChangeEvent();
             ResumePondering();
@@ -686,16 +709,16 @@ namespace SharpChess.Model
             ResumePondering();
         }
 
-/*
-        /// <summary>
-        ///   Start normal game.
-        /// </summary>
-        public static void StartNormalGame()
-        {
-            PlayerToPlay.Clock.Start();
-            ResumePondering();
-        }
-*/
+        /*
+                /// <summary>
+                ///   Start normal game.
+                /// </summary>
+                public static void StartNormalGame()
+                {
+                    PlayerToPlay.Clock.Start();
+                    ResumePondering();
+                }
+        */
 
         /// <summary>
         ///   Suspend pondering.
@@ -1075,6 +1098,41 @@ namespace SharpChess.Model
         }
 
         /// <summary>
+        ///   Start a new 960 game. For internal use only.
+        /// </summary>
+        private static void New960Internal()
+        {
+            New960Internal(string.Empty);
+        }
+
+        /// <summary>
+        ///   Start a new 960 game from the specified FEN string position. For internal use only.
+        /// </summary>
+        /// <param name="fenString"> The str fen. </param>
+        private static void New960Internal(string fenString)
+        {
+            if (fenString == string.Empty)
+            {
+                fenString = Fen.Game960StartPosition;
+            }
+
+            Fen.Validate(fenString);
+
+            HashTable.Clear();
+            HashTablePawn.Clear();
+            HashTableCheck.Clear();
+            KillerMoves.Clear();
+            HistoryHeuristic.Clear();
+
+            UndoAllMovesInternal();
+            MoveRedoList.Clear();
+            saveGameFileName = string.Empty;
+            Fen.SetBoardPosition(fenString);
+            PlayerWhite.Clock.Reset();
+            PlayerBlack.Clock.Reset();
+        }
+
+        /// <summary>
         ///   Called when the computer has finished thinking, and is ready to make its move.
         /// </summary>
         /// <exception cref="ApplicationException">Raised when principal variation is empty.</exception>
@@ -1142,6 +1200,7 @@ namespace SharpChess.Model
             xmldoc.AppendChild(xmlnodeGame);
 
             xmlnodeGame.SetAttribute("FEN", FenStartPosition == Fen.GameStartPosition ? string.Empty : FenStartPosition);
+            xmlnodeGame.SetAttribute("FEN", FenStartPosition == Fen.Game960StartPosition ? string.Empty : FenStartPosition);
             xmlnodeGame.SetAttribute("TurnNo", TurnNo.ToString(CultureInfo.InvariantCulture));
             xmlnodeGame.SetAttribute(
                 "WhitePlayer", PlayerWhite.Intellegence == Player.PlayerIntellegenceNames.Human ? "Human" : "Computer");
